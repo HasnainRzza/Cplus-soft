@@ -1,0 +1,3 @@
+{"timestamp": "2026-06-19T13:14:32.131048", "event_type": "CACHE_MISS_NEW_QUERY", "details": {"query": "how are you"}}
+{"timestamp": "2026-06-19T13:14:56.984837", "event_type": "CACHE_MISS_NEW_QUERY", "details": {"query": "what is my name"}}
+{"timestamp": "2026-06-19T13:16:35.150823", "event_type": "CACHE_MISS_NEW_QUERY", "details": {"query": "how are you doing"}}

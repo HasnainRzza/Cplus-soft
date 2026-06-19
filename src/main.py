@@ -1,10 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import asyncio
 import os
 import shutil
 
-from config.config import UPLOAD_DIR
+from config.config import UPLOAD_DIR, PROJECT_ROOT
 from src.document_processor import process_pdf
 from src.vectorstore import save_vectorstore
 from src.agent import ask_agent_stream
@@ -12,6 +14,16 @@ from src.logger import flush_logs_worker, log_event
 from src.semantic_cache import semantic_cache
 
 app = FastAPI(title="CV RAG Application")
+
+# Mount Static Files
+os.makedirs(os.path.join(PROJECT_ROOT, "frontend", "static"), exist_ok=True)
+os.makedirs(os.path.join(PROJECT_ROOT, "frontend", "js"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=os.path.join(PROJECT_ROOT, "frontend", "static")), name="static")
+app.mount("/js", StaticFiles(directory=os.path.join(PROJECT_ROOT, "frontend", "js")), name="js")
+
+@app.get("/")
+async def root():
+    return FileResponse(os.path.join(PROJECT_ROOT, "frontend", "templates", "index.html"))
 
 class ChatRequest(BaseModel):
     session_id: str

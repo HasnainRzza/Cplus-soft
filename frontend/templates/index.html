@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cplus RAG Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <main class="layout-grid">
+        <!-- Left: Upload & Context -->
+        <section class="panel-left">
+            <header>
+                <h1>System Context</h1>
+                <p>Upload a CV to provide deterministic context for the LLM pipeline.</p>
+            </header>
+            
+            <div class="upload-zone" id="upload-zone">
+                <i class="ph ph-upload-simple"></i>
+                <h3>Drag & Drop CV</h3>
+                <p>PDF documents only</p>
+                <input type="file" id="file-input" accept=".pdf" hidden>
+            </div>
+            
+            <div id="upload-status" class="status-box hidden">
+                <div class="spinner"></div>
+                <span>Processing Document...</span>
+            </div>
+            <div id="upload-success" class="status-box success hidden">
+                <i class="ph ph-check-circle"></i>
+                <span>Document Indexed</span>
+            </div>
+        </section>
+
+        <!-- Right: Chat Interface -->
+        <section class="panel-right">
+            <div class="chat-header">
+                <h2>RAG Terminal</h2>
+                <span class="session-badge" id="session-badge"></span>
+            </div>
+            <div class="chat-history" id="chat-history">
+                <div class="message system">
+                    <div class="avatar"><i class="ph ph-robot"></i></div>
+                    <div class="content">System initialized. I am ready to analyze the candidate's profile.</div>
+                </div>
+            </div>
+            <div class="chat-input-wrapper">
+                <form id="chat-form">
+                    <input type="text" id="chat-input" placeholder="Query the system..." autocomplete="off" required>
+                    <button type="submit" id="send-btn">
+                        <i class="ph ph-paper-plane-right"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <script src="/js/app.js"></script>
+</body>
+</html>
