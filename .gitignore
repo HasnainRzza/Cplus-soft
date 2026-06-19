@@ -1,0 +1,33 @@
+# Security
+.env
+
+# Application Runtime Data
+# Ignore user uploaded CVs
+/uploads/
+# Ignore locally generated FAISS vector databases
+/faiss_index/
+# Ignore runtime application logs
+
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
