@@ -189,3 +189,125 @@ The semantic cache is intentionally implemented without external dependencies to
 
 **Why asyncio.Queue over a message broker?**
 For the scale of this application, a built-in asyncio queue provides genuine non-blocking event dispatch without the operational overhead of RabbitMQ or Kafka. The 60-second batch-flush pattern mirrors standard write-behind caching strategies used in production telemetry pipelines.
+
+---
+
+## Docker – Build & Run
+
+The Docker image for this project is named **`rag_api`**.
+
+### 1. Build the Image
+
+Run this command from the project root (the directory containing the `Dockerfile`):
+
+```powershell
+docker build -t rag_api .
+```
+
+> The first build takes a few minutes as it compiles ML packages (`faiss-cpu`, `sentence-transformers`). Subsequent builds are fast thanks to Docker layer caching.
+
+---
+
+### 2. Run the Container
+
+#### Option A – Quick run (no data persistence)
+
+```powershell
+docker run -d `
+  --name cv-rag `
+  -p 8000:8000 `
+  -e GROQ_API_KEY=your_groq_api_key_here `
+  rag_api
+```
+
+#### Option B – Recommended (with volumes for persistence)
+
+Uploaded PDFs, the FAISS index, logs, and downloaded HuggingFace models are stored inside Docker named volumes so they survive container restarts.
+
+```powershell
+docker run -d `
+  --name cv-rag `
+  -p 8000:8000 `
+  -e GROQ_API_KEY=your_groq_api_key_here `
+  -v cv_uploads:/app/uploads `
+  -v cv_logs:/app/logs `
+  -v cv_faiss:/app/faiss_index `
+  -v hf_cache:/app/.cache/huggingface `
+  rag_api
+```
+
+#### Option C – Using a `.env` file (recommended for local dev)
+
+```powershell
+docker run -d `
+  --name cv-rag `
+  -p 8000:8000 `
+  --env-file .env `
+  -v cv_uploads:/app/uploads `
+  -v cv_logs:/app/logs `
+  -v cv_faiss:/app/faiss_index `
+  -v hf_cache:/app/.cache/huggingface `
+  rag_api
+```
+---
+
+### 3. Access the Application
+
+| Interface | URL |
+|---|---|
+| Chat UI | `http://localhost:8000` |
+| Interactive API Docs (Swagger) | `http://localhost:8000/docs` |
+| ReDoc API Reference | `http://localhost:8000/redoc` |
+
+---
+
+### 4. How to Use the Application
+
+**Step 1 – Upload a CV/Resume**
+
+Use the web UI at `http://localhost:8000` or call the API directly:
+
+```bash
+curl -X POST http://localhost:8000/upload \
+  -F "file=@/path/to/resume.pdf"
+```
+
+The endpoint returns immediately while the PDF is processed in the background:
+```json
+{ "message": "CV upload received. Processing in background..." }
+```
+
+**Step 2 – Chat with the Agent**
+
+Via the web UI — type your question in the chat box and press Send.
+
+Via the API:
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "user-123", "query": "Summarize the candidate experience with Python."}'
+```
+
+Responses are streamed as plain text tokens in real time.
+
+---
+
+### 5. Useful Docker Commands
+
+| Action | Command |
+|---|---|
+| View live container logs | `docker logs -f cv-rag` |
+| Check health status | `docker inspect --format='{{.State.Health.Status}}' cv-rag` |
+| Stop the container | `docker stop cv-rag` |
+| Restart the container | `docker start cv-rag` |
+| Remove the container | `docker rm cv-rag` |
+| Remove the image | `docker rmi rag_api` |
+| Rebuild from scratch (no cache) | `docker build --no-cache -t rag_api .` |
+| List all named volumes | `docker volume ls` |
+
+---
+
+### 6. Notes on First Run
+
+- On the **first startup**, `sentence-transformers` will automatically download the `all-MiniLM-L6-v2` embedding model (~80 MB). With the `hf_cache` volume mounted, this download only happens once.
+- The application's **health check** pings `GET /` every 30 seconds. You can monitor it with `docker ps` — the `STATUS` column will show `healthy` once the app is ready.
